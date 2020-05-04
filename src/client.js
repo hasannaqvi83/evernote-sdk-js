@@ -18,7 +18,7 @@
  */
 
 import OAuth from 'oauth';
-import {NoteStoreClient, UserStoreClient} from './stores';
+import { NoteStoreClient, UserStoreClient } from './stores';
 
 class WrappedNoteStoreClient {
   constructor(enInfoFunc) {
@@ -33,8 +33,8 @@ class WrappedNoteStoreClient {
 
   getThriftClient() {
     if (!this._thriftClient) {
-      this._thriftClient = this.enInfoFunc().then(({token, url}) => {
-        return new NoteStoreClient({token, url});
+      this._thriftClient = this.enInfoFunc().then(({ token, url }) => {
+        return new NoteStoreClient({ token, url });
       });
     }
     return this._thriftClient;
@@ -63,11 +63,11 @@ class Client {
     this.token = options.token;
     let defaultServiceHost;
     if (this.sandbox) {
-      defaultServiceHost = 'sandbox.evernote.com';
+      defaultServiceHost = 'https://cors-anywhere.herokuapp.com/https://sandbox.evernote.com';
     } else if (this.china) {
-      defaultServiceHost = 'app.yinxiang.com';
+      defaultServiceHost = 'https://cors-anywhere.herokuapp.com/https:app.yinxiang.com';
     } else {
-      defaultServiceHost = 'www.evernote.com';
+      defaultServiceHost = 'https://cors-anywhere.herokuapp.com/https://www.evernote.com';
     }
     this.serviceHost = options.serviceHost || defaultServiceHost;
   }
@@ -86,10 +86,10 @@ class Client {
   getAccessToken(oauthToken, oauthTokenSecret, oauthVerifier, callback) {
     var oauth = this.getOAuthClient('');
     oauth.getOAuthAccessToken(oauthToken, oauthTokenSecret, oauthVerifier,
-    (err, oauthAccessToken, oauthAccessTokenSecret, results) => {
-      this.token = oauthAccessToken;
-      callback(err, oauthAccessToken, oauthAccessTokenSecret, results);
-    });
+      (err, oauthAccessToken, oauthAccessTokenSecret, results) => {
+        this.token = oauthAccessToken;
+        callback(err, oauthAccessToken, oauthAccessTokenSecret, results);
+      });
   }
 
   getUserStore() {
@@ -108,11 +108,11 @@ class Client {
     }
     return new WrappedNoteStoreClient(() => {
       if (this.noteStoreUrl) {
-        return Promise.resolve({token: this.token, url: this.noteStoreUrl});
+        return Promise.resolve({ token: this.token, url: this.noteStoreUrl });
       } else {
         return this.getUserStore().getUserUrls().then(userUrls => {
           this.noteStoreUrl = userUrls.noteStoreUrl; // cache for later calls
-          return {token: this.token, url: userUrls.noteStoreUrl};
+          return { token: this.token, url: userUrls.noteStoreUrl };
         });
       }
     });
@@ -122,15 +122,15 @@ class Client {
     return new WrappedNoteStoreClient(() => {
       const cache = this[linkedNotebook.sharedNotebookGlobalId];
       if (cache && cache.sharedToken) {
-        return Promise.resolve({token: cache.sharedToken, url: linkedNotebook.noteStoreUrl});
+        return Promise.resolve({ token: cache.sharedToken, url: linkedNotebook.noteStoreUrl });
       } else {
         return this.getNoteStore().authenticateToSharedNotebook(linkedNotebook.sharedNotebookGlobalId)
-        .then(sharedAuth => {
-          const token = sharedAuth.authenticationToken;
-          // cache for later calls
-          this[linkedNotebook.sharedNotebookGlobalId] = {sharedToken: token};
-          return {token, url: linkedNotebook.noteStoreUrl};
-        });
+          .then(sharedAuth => {
+            const token = sharedAuth.authenticationToken;
+            // cache for later calls
+            this[linkedNotebook.sharedNotebookGlobalId] = { sharedToken: token };
+            return { token, url: linkedNotebook.noteStoreUrl };
+          });
       }
     });
   }
@@ -138,13 +138,13 @@ class Client {
   getBusinessNoteStore() {
     return new WrappedNoteStoreClient(() => {
       if (this.bizToken && this.bizNoteStoreUrl) {
-        return Promise.resolve({token: this.bizToken, url: this.bizNoteStoreUrl});
+        return Promise.resolve({ token: this.bizToken, url: this.bizNoteStoreUrl });
       } else {
         return this.getUserStore().authenticateToBusiness().then(bizAuth => {
           this.bizToken = bizAuth.authenticationToken;
           this.bizNoteStoreUrl = bizAuth.noteStoreUrl;
           this.bizUser = bizAuth.user;
-          return {token: bizAuth.authenticationToken, url: bizAuth.noteStoreUrl};
+          return { token: bizAuth.authenticationToken, url: bizAuth.noteStoreUrl };
         });
       }
     });
